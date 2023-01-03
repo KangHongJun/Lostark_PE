@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
-
+set(CMAKE_PREFIX_PATH "E:/Qt/6.4.1/mingw_64/lib/cmake/")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(Lostark_PE VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
@@ -10,12 +11,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Console)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.ui
-)
+        mainwindow.cpp mainwindow.h
+        VProductList.cpp VProductList.h
+        widget.cpp widget.h
+        )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Lostark_PE
