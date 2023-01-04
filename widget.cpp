@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QFileDialog>
 #include "widget.h"
 
 widget::widget(QWidget *parent)
@@ -19,11 +20,13 @@ widget::widget(QWidget *parent)
 
     //button
     addButton = new QPushButton(tr("&Add"));
-    addButton->show();
+   // addButton->show();
     editButton = new QPushButton(tr("&Edit"));
     editButton->setEnabled(false);
     removeButton = new QPushButton(tr("&Remove"));
     removeButton->setEnabled(true);
+    findButton = new QPushButton(tr("&Find"));
+    findButton->setEnabled(false);
     submitButton = new QPushButton(tr("&Submit"));
     submitButton->hide();
     cancelButton = new QPushButton(tr("&Cancel"));
@@ -33,6 +36,16 @@ widget::widget(QWidget *parent)
     nextButton->setEnabled(false);
     previousButton = new QPushButton(tr("&Previous"));
     previousButton->setEnabled(false);
+
+    saveButton = new QPushButton(tr("&Save"));
+    saveButton->setToolTip(tr("Save contacts to a file"));
+    saveButton->setEnabled(false);
+    loadButton = new QPushButton(tr("&Load"));
+    loadButton->setToolTip(tr("Load contacts from a file"));
+    loadButton->setEnabled(false);
+
+
+    dialog = new finddialog(this);
 
     connect(addButton,&QPushButton::clicked,
             this,&widget::addContact);
@@ -44,11 +57,18 @@ widget::widget(QWidget *parent)
             this,&widget::next);
     connect(previousButton,&QPushButton::clicked,
             this,&widget::previous);
+    connect(findButton,&QPushButton::clicked,
+            this,&widget::findContact);
 
     connect(editButton,&QPushButton::clicked,
             this,&widget::editContact);
     connect(removeButton,&QPushButton::clicked,
             this,&widget::removeContact);
+
+    connect(saveButton,&QPushButton::clicked,
+            this,&widget::saveFile);
+    connect(loadButton,&QPushButton::clicked,
+            this,&widget::saveFile);
 
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;
     buttonLayout1->addWidget(addButton,Qt::AlignTop);
@@ -56,6 +76,9 @@ widget::widget(QWidget *parent)
     buttonLayout1->addWidget(cancelButton);
     buttonLayout1->addWidget(editButton);
     buttonLayout1->addWidget(removeButton);
+    buttonLayout1->addWidget(findButton);
+    buttonLayout1->addWidget(saveButton);
+    buttonLayout1->addWidget(loadButton);
     buttonLayout1->addStretch();//버튼 사이의 공간 조정
 
 
@@ -192,8 +215,6 @@ void widget::previous()
     addressText->setText(i.value());
 }
 
-
-
 void widget::removeContact()
 {
     QString name = nameLine->text();
@@ -255,11 +276,53 @@ void widget::updateInterface(Mode mode)
             int number = contacts.size();
             editButton->setEnabled(number >= 1);
             removeButton->setEnabled(number >= 1);
+            findButton->setEnabled(number>1);
             nextButton->setEnabled(number > 1);
             previousButton->setEnabled(number >1 );
+            saveButton->setEnabled(number >= 1);
 
             submitButton->hide();
             cancelButton->hide();
             break;
     }
+}
+
+void widget::findContact()
+{
+    dialog->show();
+
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        QString contactName = dialog->getFindText();
+
+        if (contacts.contains(contactName))
+        {
+            nameLine->setText(contactName);
+            addressText->setText(contacts.value(contactName));
+        }
+        else
+        {
+            QMessageBox::information(this, tr("Contact Not Found"),
+                                     tr("Sorry, \"%1\" is not in your address book.").arg(contactName));
+            return;
+        }
+    }
+    updateInterface(NavigationMode);
+}
+
+void widget::saveFile()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save Address"),"",
+                                                    tr("Address (*.abk);;All (*)"));
+    if (fileName.isEmpty())
+        return;
+    else
+    {
+
+    }
+}
+void widget::FromloadFile()
+{
+
 }

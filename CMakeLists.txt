@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_PREFIX_PATH "E:/Qt/6.4.1/mingw_64/lib/cmake/")
+set(BOOSTROOT "E:/boost-1.81.0/")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(Lostark_PE VERSION 0.1 LANGUAGES CXX)
+
+
+
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -13,14 +17,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Console)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Boost REQUIRED COMPONENTS)
 
+include_directories(${Boost_INCLUDE_DIR})
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.ui
         mainwindow.cpp mainwindow.h
         VProductList.cpp VProductList.h
         widget.cpp widget.h
-        )
+        finddialog.cpp finddialog.h)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Lostark_PE
@@ -46,6 +52,7 @@ else()
 endif()
 
 target_link_libraries(Lostark_PE PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Lostark_PE ${Boost_FILESYSTEM_LIBRARY})
 
 set_target_properties(Lostark_PE PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

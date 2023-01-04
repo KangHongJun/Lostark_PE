@@ -1,7 +1,7 @@
 //
 // Created by rkdgh on 2023-01-03.
 //
-
+#include <QLabel>
 #include <QWidget>
 #include <QListWidget>
 #include <QPushButton>
@@ -20,11 +20,13 @@ public:
 
 public slots:
     void SetSelectedCategory();
+    void SetViewTest();
 
 private:
     QListWidget *listWidget1;
     QListWidget *listWidget2;
     QPushButton *addButton;
+    QLabel *nameLabel;
 
 protected:
     QStringList nameA;
