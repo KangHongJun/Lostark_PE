@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_PREFIX_PATH "E:/Qt/6.4.1/mingw_64/lib/cmake/")
 set(BOOSTROOT "E:/boost-1.81.0/")
+
+set(CURL "E:/curl-7.87.0-win64-mingw/")
+set(CURL_LIBRARY "-lcurl")
+set(CURL_INCLUDE_DIR "E:/curl-7.87.0-win64-mingw/include")
+
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(Lostark_PE VERSION 0.1 LANGUAGES CXX)
-
-
-
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -18,8 +21,12 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Console)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Boost REQUIRED COMPONENTS)
+find_package(CURL REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
+include_directories(${CURL_INCLUDE_DIR})
+include_directories(${CURL_SOURCE_DIR})
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.ui
@@ -51,8 +58,12 @@ else()
     endif()
 endif()
 
-target_link_libraries(Lostark_PE PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Lostark_PE PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+        ws2_32
+        ${CURL_LIBRARIES}
+        curl)
 target_link_libraries(Lostark_PE ${Boost_FILESYSTEM_LIBRARY})
+
 
 set_target_properties(Lostark_PE PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
