@@ -15,6 +15,10 @@
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+#include <QDir>
+#include <QGuiApplication>
+
+
 using namespace std;
 
 VProductList::VProductList(QWidget *parent)
@@ -94,71 +98,86 @@ void VProductList::SetSelectedCategory()
     }
 }
 
+
+#include <curl/curl.h>
+struct MemoryStruct {
+    char *memory;
+    size_t size;
+};
+
+static size_t
+WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+
+    size_t realsize = size * nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+
+    char *ptr = static_cast<char *>(realloc(mem->memory, mem->size + realsize + 1));
+
+    if(!ptr) {
+        /* out of memory! */
+        printf("not enough memory (realloc returned NULL)\n");
+        return 0;
+    }
+
+    mem->memory = ptr;
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+
+    return realsize;
+}
+
+static string curl_test()
+{
+    CURL *curl;
+    CURLcode res;
+
+    std::string url = "https://developer-lostark.game.onstove.com/armories/characters/coolguy/profiles";
+    struct curl_slist *headerlist = nullptr;
+    headerlist = curl_slist_append(headerlist, "Accept: application/json");
+    headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
+    headerlist = curl_slist_append(headerlist, "charset=UTF-8");
+    headerlist = curl_slist_append(headerlist, "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IktYMk40TkRDSTJ5NTA5NWpjTWk5TllqY2lyZyIsImtpZCI6IktYMk40TkRDSTJ5NTA5NWpjTWk5TllqY2lyZyJ9.eyJpc3MiOiJodHRwczovL2x1ZHkuZ2FtZS5vbnN0b3ZlLmNvbSIsImF1ZCI6Imh0dHBzOi8vbHVkeS5nYW1lLm9uc3RvdmUuY29tL3Jlc291cmNlcyIsImNsaWVudF9pZCI6IjEwMDAwMDAwMDAwNjIzNDkifQ.QFz3lboYqWyvFwjiJXqjqxC3LvnEALpEaEItA_ORvPNtVViOCPIrjaOnkzs22tQpeKOgKxJ-K_OVh54ZGIo4QBLOX2ZNWV6KsevVz7gxXvuysesHzKVdP-_kSjn7T6X-X4CU7bdKXkYReM2AiROeT8HqENPd5L6ZGkGUcfiP319S9d57As0wyJWvhg5UuFStMPeitytFkE6IDm9o4I6Hu1_aiu3TO2YmwmnEZttk3J6HAFIO3eDqy2SgNNAGLZoYscbplhF1meQQMj3NQlkQsCdHfwgpLSJjpYy06LY4e70-UsGQWx_ckWbErSEfVh1f2PLzIdyelbXTzHoi_CIH3g");
+
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    curl = curl_easy_init();
+
+    if(curl)
+    {
+        struct MemoryStruct chunk;
+        chunk.memory = (char *) malloc(1);
+        chunk.size = 0;
+
+        curl_easy_setopt(curl, CURLOPT_URL,url.c_str());
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
+
+
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,false);
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,false);
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
+        //curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+        res = curl_easy_perform(curl);
+
+        cout<<chunk.memory<<" ";
+
+        return chunk.memory;
+    }
+}
+
 void VProductList::SetViewTest()
 {
     nameLabel->clear();
     nameLabel->show();
 
-    boost::asio::io_context ioc;
-    boost::asio::ip::tcp::resolver resolver(ioc);
-    boost::beast::tcp_stream stream(ioc);
-
-    try
-    {
-        auto const host = "jsonplaceholder.typicode.com";
-        auto const port = "80";
-        auto const target = "/posts/1";
-        bool isVer1_0 = false;
-        int version = isVer1_0 ? 10 : 11;
-
-        auto const results = resolver.resolve(host, port);
-        stream.connect(results);
-
-
-        string urlHost = host;
-        urlHost += ":";
-        urlHost += port;
-
-        boost::beast::http::request<boost::beast::http::string_body> req{ boost::beast::http::verb::get, target, version };
-        req.set(boost::beast::http::field::host, urlHost);
-        req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-        boost::beast::http::write(stream, req);
-
-        boost::beast::flat_buffer buffer;
-
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
-
-        boost::beast::http::read(stream, buffer, res);
-
-        string json = boost::beast::buffers_to_string(res.body().data());
-
-        QString test = QString::fromStdString(json);
-
-        nameLabel->setText(test);
-
-        boost::beast::error_code ec;
-        stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-
-        if (ec && ec != boost::beast::errc::not_connected)
-        {
-            clog << "error: " << ec.message() << endl;
-            return;
-        }
-    }
-    catch (std::exception const& ex) {
-        //nameLabel->setText(ex.what());
-        return;
-    }
-
-
 
     int selectedRow2 = listWidget2->currentRow();
-    //
 
-
-
-
-
+    QString curlvalue = QString::fromStdString(curl_test());
+    nameLabel->setText(curlvalue);
 
 }

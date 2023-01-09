@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_PREFIX_PATH "E:/Qt/6.4.1/mingw_64/lib/cmake/")
 set(BOOSTROOT "E:/boost-1.81.0/")
 
-set(CURL "E:/curl-7.87.0-win64-mingw/")
-set(CURL_LIBRARY "-lcurl")
-set(CURL_INCLUDE_DIR "E:/curl-7.87.0-win64-mingw/include")
+set(CURL "E:/curl-7.87.0/")
 
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -61,7 +59,7 @@ endif()
 target_link_libraries(Lostark_PE PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
         ws2_32
         ${CURL_LIBRARIES}
-        curl)
+       )
 target_link_libraries(Lostark_PE ${Boost_FILESYSTEM_LIBRARY})
 
 
