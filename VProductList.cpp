@@ -128,12 +128,55 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
     return realsize;
 }
 
+//***
+std::map<std::string, std::string> mappify1(std::string const& s)
+{
+    std::map<std::string, std::string> m;
+
+    std::string key, val;
+    std::istringstream iss(s);
+
+    while(std::getline(std::getline(iss, key, ':') >> std::ws, val))
+        m[key] = val;
+
+    return m;
+}
+
+std::map<std::string, std::string> mappify2(std::string const& s)
+{
+    std::map<std::string, std::string> m;
+
+    std::string::size_type key_pos = 0;
+    std::string::size_type key_end;
+    std::string::size_type val_pos;
+    std::string::size_type val_end;
+
+    while((key_end = s.find(':', key_pos)) != std::string::npos)
+    {
+        if((val_pos = s.find_first_not_of(": ", key_end)) == std::string::npos)
+            break;
+
+        val_end = s.find(',', val_pos);
+        m.emplace(s.substr(key_pos, key_end - key_pos), s.substr(val_pos, val_end - val_pos));
+
+        key_pos = val_end;
+        if(key_pos != std::string::npos)
+            ++key_pos;
+    }
+
+    return m;
+}
+
 static string curl_test()
 {
     CURL *curl;
     CURLcode res;
 
-    std::string url = "https://developer-lostark.game.onstove.com/armories/characters/coolguy/profiles";
+    std::string url = "https://developer-lostark.game.onstove.com/markets/items";
+    std::string category = "{\"CategoryCode\":90000,"
+                           "\"PageNo\":1,"
+                           "\"ItemGrade\":\"고급\"}";
+
     struct curl_slist *headerlist = nullptr;
     headerlist = curl_slist_append(headerlist, "Accept: application/json");
     headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
@@ -150,23 +193,58 @@ static string curl_test()
         chunk.memory = (char *) malloc(1);
         chunk.size = 0;
 
-        curl_easy_setopt(curl, CURLOPT_URL,url.c_str());
-        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 
 
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,false);
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,false);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, category.c_str());
+
 
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
-        //curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
         res = curl_easy_perform(curl);
+        //need clean
 
-        cout<<chunk.memory<<" ";
+        int startN = 2;
+        int endN;
 
-        return chunk.memory;
+        //char to string
+        string APIdata_json = chunk.memory;
+        std::string APIdata_split;
+
+        std::string test;
+
+
+
+        while(startN<APIdata_json.size())
+        {
+            startN = APIdata_json.find("{",startN)+1;
+            endN = APIdata_json.find("}",startN)-startN-1;
+
+            cout<<startN<<"||"<<endN<<"end"<<"//"<<APIdata_json.size();
+
+            APIdata_split = APIdata_json.substr(startN,endN);
+
+            auto m = mappify2(APIdata_split);
+            for(auto const& p: m)
+            {
+                std::cout << p.first << " - " << p.second << '\n';
+                test += p.first + p.second;
+            }
+
+            if(startN+endN+10>APIdata_json.size())
+                break;
+
+            startN +=10;
+        }
+
+        return test;
     }
+    return 0;
 }
 
 void VProductList::SetViewTest()
