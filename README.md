@@ -11,9 +11,6 @@ include_directories(${CURL_INCLUDE_DIR})
 include_directories(${CURL_SOURCE_DIR})
 target_link_libraries(pj ${CURL_LIBRARIES})
  ```
- 
- json 연결
-  - 릴리즈 파일 다운 후 폴더 이동
   
  libcurl 사용 주의점
   - callback 사용시 curl_easy_perform이전에 값을 담아야 한다.
