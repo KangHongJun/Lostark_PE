@@ -7,16 +7,15 @@
 #include <QString>
 #include "VProductList.h"
 #include <QMessageBox>
-
 #include <iostream>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
-
 #include <QDir>
 #include <QGuiApplication>
+#include <regex>
 
 
 using namespace std;
@@ -100,6 +99,8 @@ void VProductList::SetSelectedCategory()
 
 
 #include <curl/curl.h>
+#include <fstream>
+
 struct MemoryStruct {
     char *memory;
     size_t size;
@@ -216,25 +217,40 @@ static string curl_test()
         string APIdata_json = chunk.memory;
         std::string APIdata_split;
 
-        std::string test;
-
-
+        ofstream fout;
+        fout.open("test2.csv");
+        bool bFirst = true;
 
         while(startN<APIdata_json.size())
         {
             startN = APIdata_json.find("{",startN)+1;
             endN = APIdata_json.find("}",startN)-startN-1;
 
-            cout<<startN<<"||"<<endN<<"end"<<"//"<<APIdata_json.size();
-
             APIdata_split = APIdata_json.substr(startN,endN);
 
+            if(bFirst)
+            {
+                auto m = mappify2(APIdata_split);
+
+                for(auto const& p: m)
+                {
+                    fout<<regex_replace(p.first,regex("\""),"")+",";
+                    fout<<p.first+",";
+                }
+                fout<<"\n";
+                bFirst = false;
+            }
+
+
             auto m = mappify2(APIdata_split);
+
             for(auto const& p: m)
             {
                 std::cout << p.first << " - " << p.second << '\n';
-                test += p.first + p.second;
+                fout<<regex_replace(p.second,regex("\""),"")+",";
             }
+            fout<<"\n";
+            cout<<"\n";
 
             if(startN+endN+10>APIdata_json.size())
                 break;
@@ -242,7 +258,7 @@ static string curl_test()
             startN +=10;
         }
 
-        return test;
+        return "test";
     }
     return 0;
 }
