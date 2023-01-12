@@ -1,6 +1,6 @@
 //
 // Created by rkdgh on 2022-12-28.
-//
+//example - Qwidget
 
 #include <QLabel>
 #include <QGridLayout>

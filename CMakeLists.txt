@@ -31,7 +31,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp mainwindow.h
         VProductList.cpp VProductList.h
         widget.cpp widget.h
-        finddialog.cpp finddialog.h)
+        finddialog.cpp finddialog.h
+        CURL/POSTAPI.cpp CURL/POSTAPI.h)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Lostark_PE

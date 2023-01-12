@@ -27,6 +27,7 @@ private:
     QListWidget *listWidget2;
     QPushButton *addButton;
     QLabel *nameLabel;
+    char *selectItem;
 
 protected:
     QStringList nameA;
