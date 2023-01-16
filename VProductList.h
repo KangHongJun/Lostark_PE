@@ -17,6 +17,7 @@ class VProductList : public QWidget {
 
 public:
     VProductList(QWidget *parent = nullptr);
+    std::vector<std::pair<std::string,std::string>> ItemV;
 
 public slots:
     void SetSelectedCategory();
@@ -29,8 +30,8 @@ private:
     QLabel *nameLabel;
 
 protected:
-    QStringList nameA;
-    QStringList nameB;
+    QStringList post90000;
+    QStringList productA;
     QStringList nameC;
 };
 

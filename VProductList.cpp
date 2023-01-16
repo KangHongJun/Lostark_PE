@@ -2,9 +2,6 @@
 // Created by rkdgh on 2023-01-03.
 //
 
-typedef unsigned char Byte;
-typedef Byte cs_byte;
-
 #include <QListWidget>
 #include <QGridLayout>
 #include <QString>
@@ -21,13 +18,22 @@ using namespace std;
 
 VProductList::VProductList(QWidget *parent)
 {
-    POSTAPI();
+    //post api
+    //POSTAPI();
 
+    //정보
+    nameLabel = new QLabel(tr("Name"));
 
+    //QListWidget 구성
+
+    //post90000 list by read csv
     ifstream file("post90000.csv");
     while(file.good())
     {
         vector<string> row = POSTAPI::csv_read_row(file,',');
+
+        if(row[0]=="@")
+            break;
 
         if(!row[0].find('#'))
         {
@@ -38,30 +44,22 @@ VProductList::VProductList(QWidget *parent)
             for(auto v: row)
             {
                 QString listname = QString::fromStdString(row[POSTAPI::eInfoItem::Name]);
-                nameA.append(listname);
+                post90000.append(listname);
+                ItemV.emplace_back(row[POSTAPI::eInfoItem::Name],row[POSTAPI::eInfoItem::CurrentMinPrice]);
                 break;
             }
         }
     }
 
-
-    addButton = new QPushButton(tr("&Add"));
-    connect(addButton,&QPushButton::clicked,this,&VProductList::SetSelectedCategory);
-    nameLabel = new QLabel(tr("Name"));
-    nameLabel->hide();
-
-
-    nameB.append("B1");
-    nameB.append("B2");
-    nameB.append("B3");
-
+    //productA product info - recipe
+    productA.append("최상급");
     nameC.append("C1");
     nameC.append("C2");
     nameC.append("C3");
 
     listWidget1 = new QListWidget(this);
-    new QListWidgetItem(tr("post90001"),listWidget1);
-    new QListWidgetItem(tr("name2"),listWidget1);
+    new QListWidgetItem(tr("post90000"),listWidget1);
+    new QListWidgetItem(tr("제작A"),listWidget1);
     new QListWidgetItem(tr("name3"),listWidget1);
 
     listWidget2 = new QListWidget(this);
@@ -71,6 +69,7 @@ VProductList::VProductList(QWidget *parent)
 
     connect(listWidget2,&QListWidget::itemClicked,
             this,&VProductList::SetViewTest);
+
 
 
     auto *QHbox = new QHBoxLayout(this);
@@ -91,15 +90,15 @@ void VProductList::SetSelectedCategory()
     switch (selectedRow)
     {
         case 0:
-            for(int i=0;i<nameA.length();i++)
+            for(int i=0;i<post90000.length();i++)
             {
-                new QListWidgetItem(nameA[i],listWidget2);
+                new QListWidgetItem(post90000[i],listWidget2);
             }
             break;
         case 1:
-            for(int i=0;i<nameB.length();i++)
+            for(int i=0;i<productA.length();i++)
             {
-                new QListWidgetItem(nameB[i],listWidget2);
+                new QListWidgetItem(productA[i],listWidget2);
             }
             break;
         case 2:
@@ -116,30 +115,23 @@ void VProductList::SetViewTest()
     nameLabel->clear();
     nameLabel->show();
 
-
-    nameLabel->setText(listWidget2->currentItem()->text());
-
-    //POSTAPI에서 선언해봤으나 에러.. 나중에 수정하자
-    std::vector<std::pair<std::string,std::string>> ItemV;
-    ifstream file("post90000.csv");
-
-    while(true)
-    {
-        vector<string> read_row = POSTAPI::csv_read_row(file,',');
-
-        if(read_row[0]=="@")
-            break;
-
-        if(!read_row[0].find('#'))
-        {
-            continue;
-        }
-        else
-        {
-            ItemV.emplace_back(read_row[POSTAPI::eInfoItem::Name],read_row[POSTAPI::eInfoItem::CurrentMinPrice]);
-        }
-    }
-
-    QString qqq = QString::fromStdString(ItemV[5].first);
-    nameLabel->setText(qqq);
+//    string curCate = listWidget1->currentItem()->text().toStdString();
+//    //curCate기준 enum을 사용하여 category를 나눌수도 있고, 나중엔 분리될 list들이기 때문에 connect를 나눠도 된다.
+//    //카테고리 기준이므로 listWidget1값
+//    //당장은 if문
+//
+//    if(curCate=="post90000")
+//    {
+//        nameLabel->setText(listWidget1->currentItem()->text());
+//    }
+//    else if(curCate=="제작A")
+//    {
+//        nameLabel->setText(listWidget2->currentItem()->text());
+//    }
 }
+
+//Label name -> Item Name(BundleCount) - Price
+//make getpricefun -> get ItemPrice - currentinrpice/byndlecount
+//bebefit of product -> get load resipe -> getpricefun - see
+//edit text ->edit user Reduced product costs of percent
+
