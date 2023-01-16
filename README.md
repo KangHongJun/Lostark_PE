@@ -17,3 +17,5 @@ target_link_libraries(pj ${CURL_LIBRARIES})
   - 출력 시 한글이 깨지는 현상이 있었는데 디버깅 시에는 출력이 정상이었고, UTF-8가 한글로 변환되는 부분이 문제 <br>
                                                                      -> <세계지원을 위해 Unicode UTF-8 설정 체크><br>
     (다른 설정도 건들였지만 최종적으로 위 설정을 통해 적용됨)
+    
+using namespace std사용시 byte error가 생김..참고 https://cplusplus.com/forum/general/282167/
