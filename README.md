@@ -18,4 +18,4 @@ target_link_libraries(pj ${CURL_LIBRARIES})
                                                                      -> <세계지원을 위해 Unicode UTF-8 설정 체크><br>
     (다른 설정도 건들였지만 최종적으로 위 설정을 통해 적용됨)
     
-using namespace std사용시 byte error가 생김..참고 https://cplusplus.com/forum/general/282167/
+- using namespace std사용시 byte error가 생김..참고 https://cplusplus.com/forum/general/282167/
