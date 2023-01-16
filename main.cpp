@@ -1,6 +1,5 @@
 #include <QApplication>
 #include "VProductList.h"
-#include "widget.h"
 #include <iostream>
 
 using namespace std;
