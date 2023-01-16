@@ -27,12 +27,9 @@ include_directories(${CURL_SOURCE_DIR})
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.ui
-        mainwindow.cpp mainwindow.h
         VProductList.cpp VProductList.h
-        widget.cpp widget.h
-        finddialog.cpp finddialog.h
-        CURL/POSTAPI.cpp CURL/POSTAPI.h)
+        CURL/POSTAPI.cpp CURL/POSTAPI.h
+        )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Lostark_PE

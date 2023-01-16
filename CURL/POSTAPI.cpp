@@ -1,7 +1,9 @@
 //
 // Created by rkdgh on 2023-01-11.
 //
-#include <curl/curl.h>
+
+typedef unsigned char Byte;
+typedef Byte cs_byte;
 
 #include <iostream>
 #include <string>
@@ -9,7 +11,7 @@
 #include <map>
 #include <fstream>
 #include "POSTAPI.h"
-
+#include <curl/curl.h>
 using namespace std;
 //페이지 관련 개선
 POSTAPI::POSTAPI()
@@ -113,9 +115,11 @@ POSTAPI::POSTAPI()
 
         page++;
     }
+    fout<<"@,@,@,@,@,@,@,@,@,";
     fout.close();
 }
 
+//copy
 size_t POSTAPI::WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t realsize = size * nmemb;
@@ -137,6 +141,7 @@ size_t POSTAPI::WriteMemoryCallback(void *contents, size_t size, size_t nmemb, v
     return realsize;
 }
 
+//copy
 std::map<std::string, std::string> POSTAPI::mappify2(std::string const& s)
 {
     std::map<std::string, std::string> m;
@@ -160,4 +165,45 @@ std::map<std::string, std::string> POSTAPI::mappify2(std::string const& s)
     }
 
     return m;
+}
+
+vector<string> POSTAPI::csv_read_row(istream &file, char delimiter)
+{
+    stringstream ss;
+    bool inquotes = false;
+    vector<string> row;
+
+    while (file.good())
+    {
+        char c = file.get();
+        if (!inquotes && reinterpret_cast<const char *>(c) == "")
+        {
+            inquotes = true;
+        }
+        else
+        if (inquotes && reinterpret_cast<const char *>(c) == "")
+        {
+            if (file.peek())
+            {
+                ss << (char) file.get();
+            }
+            else
+            {
+                inquotes = false;
+            }
+        } else if (!inquotes && c == delimiter)
+        {
+            row.push_back(ss.str());
+            ss.str("");
+        } else if (!inquotes && (c == '\r' || c == '\n'))
+        {
+            if (file.peek() == '\n') { file.get(); }
+            row.push_back(ss.str());
+            return row;
+        }
+        else
+        {
+            ss << c;
+        }
+    }
 }

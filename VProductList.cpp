@@ -1,67 +1,33 @@
-//
+//https://doc.qt.io/qt-6/classes.html
 // Created by rkdgh on 2023-01-03.
 //
+
+typedef unsigned char Byte;
+typedef Byte cs_byte;
 
 #include <QListWidget>
 #include <QGridLayout>
 #include <QString>
-#include "VProductList.h"
-#include <QMessageBox>
-#include <iostream>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <QDir>
 #include <QGuiApplication>
+
+#include <iostream>
 #include <regex>
 #include <fstream>
 
 #include "CURL/POSTAPI.h"
+#include "VProductList.h"
 using namespace std;
-
-//나중에 빼기
-vector<string> csv_read_row(istream &file, char delimiter)
-{
-    stringstream ss;
-    bool inquotes = false;
-    vector<string> row;
-
-    while (file.good()) {
-        char c = file.get();
-        if (!inquotes && reinterpret_cast<const char *>(c) == "") {
-            inquotes = true;
-        } else if (inquotes && reinterpret_cast<const char *>(c) == "") {
-            if (file.peek()) {
-                ss << (char) file.get();
-            } else {
-                inquotes = false;
-            }
-        } else if (!inquotes && c == delimiter) {
-            row.push_back(ss.str());
-            ss.str("");
-        } else if (!inquotes && (c == '\r' || c == '\n')) {
-            if (file.peek() == '\n') { file.get(); }
-            row.push_back(ss.str());
-            return row;
-        } else {
-            ss << c;
-        }
-    }
-
-}
 
 VProductList::VProductList(QWidget *parent)
 {
+    POSTAPI();
 
-    //POSTAPI();
-    //csv - list 생성
+
     ifstream file("post90000.csv");
     while(file.good())
     {
-        vector<string> row = csv_read_row(file,',');
-
+        vector<string> row = POSTAPI::csv_read_row(file,',');
 
         if(!row[0].find('#'))
         {
@@ -75,8 +41,6 @@ VProductList::VProductList(QWidget *parent)
                 nameA.append(listname);
                 break;
             }
-
-            cout<<endl;
         }
     }
 
@@ -94,10 +58,9 @@ VProductList::VProductList(QWidget *parent)
     nameC.append("C1");
     nameC.append("C2");
     nameC.append("C3");
-    //-->
 
     listWidget1 = new QListWidget(this);
-    new QListWidgetItem(tr("post90000"),listWidget1);
+    new QListWidgetItem(tr("post90001"),listWidget1);
     new QListWidgetItem(tr("name2"),listWidget1);
     new QListWidgetItem(tr("name3"),listWidget1);
 
@@ -122,8 +85,8 @@ VProductList::VProductList(QWidget *parent)
 
 void VProductList::SetSelectedCategory()
 {
-    int selectedRow = listWidget1->currentRow();
     listWidget2->clear();
+    int selectedRow = listWidget1->currentRow();
 
     switch (selectedRow)
     {
@@ -154,12 +117,29 @@ void VProductList::SetViewTest()
     nameLabel->show();
 
 
-    int selectedRow = listWidget2->currentRow();
-
-
     nameLabel->setText(listWidget2->currentItem()->text());
 
+    //POSTAPI에서 선언해봤으나 에러.. 나중에 수정하자
+    std::vector<std::pair<std::string,std::string>> ItemV;
+    ifstream file("post90000.csv");
 
+    while(true)
+    {
+        vector<string> read_row = POSTAPI::csv_read_row(file,',');
 
+        if(read_row[0]=="@")
+            break;
 
+        if(!read_row[0].find('#'))
+        {
+            continue;
+        }
+        else
+        {
+            ItemV.emplace_back(read_row[POSTAPI::eInfoItem::Name],read_row[POSTAPI::eInfoItem::CurrentMinPrice]);
+        }
+    }
+
+    QString qqq = QString::fromStdString(ItemV[5].first);
+    nameLabel->setText(qqq);
 }
