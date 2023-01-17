@@ -17,7 +17,9 @@ class VProductList : public QWidget {
 
 public:
     VProductList(QWidget *parent = nullptr);
-    std::vector<std::pair<std::string,std::string>> ItemV;
+    std::vector<std::pair<std::string,std::string>> ItemCMP;
+    std::vector<std::pair<std::string,std::string>> ItemBC;
+    std::string getItemPrice(std::string ItemName);
 
 public slots:
     void SetSelectedCategory();
