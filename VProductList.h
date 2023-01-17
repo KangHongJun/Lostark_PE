@@ -19,7 +19,9 @@ public:
     VProductList(QWidget *parent = nullptr);
     std::vector<std::pair<std::string,std::string>> ItemCMP;
     std::vector<std::pair<std::string,std::string>> ItemBC;
-    std::string getItemPrice(std::string ItemName);
+    float getItemPrice(std::string ItemName);
+
+    float getBenefitProduct(std::string ItemName);
 
 public slots:
     void SetSelectedCategory();
@@ -30,6 +32,7 @@ private:
     QListWidget *listWidget2;
     QPushButton *addButton;
     QLabel *nameLabel;
+    QLabel *testLabel;
 
 protected:
     QStringList post90000;

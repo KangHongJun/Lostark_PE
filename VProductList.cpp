@@ -21,8 +21,10 @@ VProductList::VProductList(QWidget *parent)
     //post api
     //POSTAPI();
 
+
     //정보
     nameLabel = new QLabel(tr("Name"));
+    testLabel = new QLabel(tr("Test"));
 
     //QListWidget 구성
 
@@ -80,6 +82,7 @@ VProductList::VProductList(QWidget *parent)
     QHbox->addWidget(listWidget1);
     QHbox->addWidget(listWidget2);
     QHbox->addWidget(nameLabel);
+    QHbox->addWidget(testLabel);
 
     setLayout(QHbox);
     setWindowTitle("tt");
@@ -125,7 +128,12 @@ void VProductList::SetViewTest()
     if(curCate=="post90000")
     {
         //int -> string/Qstring 함수화
-        string testla = getItemPrice(listWidget2->currentItem()->text().toStdString());
+        std::ostringstream ss;
+        ss.precision(2);
+        ss<<getItemPrice(listWidget2->currentItem()->text().toStdString());
+
+
+        string testla = ss.str();
         QString testqst = QString::fromStdString(testla);
 
         cout<<testla;
@@ -134,7 +142,11 @@ void VProductList::SetViewTest()
     }
     else if(curCate=="제작A")
     {
-        nameLabel->setText(listWidget2->currentItem()->text());
+
+        QString test = QString::fromStdString(to_string(getBenefitProduct("달인용 제작 키트")));
+        //nameLabel->setText(listWidget2->currentItem()->text());
+
+        nameLabel->setText(test);
     }
 }
 
@@ -145,9 +157,9 @@ void VProductList::SetViewTest()
 
 
 //make getpricefun -> get ItemPrice - currentinrpice/byndlecoun
-string VProductList::getItemPrice(std::string ItemName)
+float VProductList::getItemPrice(std::string ItemName)
 {
-    std::ostringstream ss;
+
     float CMP;
     float BC;
 
@@ -166,29 +178,60 @@ string VProductList::getItemPrice(std::string ItemName)
 
     if(BC==1)
     {
-        ss<<CMP;
-        return ss.str();
+        return CMP;
     }
     else
     {
         float InPrice = CMP/BC;
-        //아래도 함수화
-        ss.precision(2);
-        ss<<InPrice;
-        return ss.str();
+        return InPrice;
+    }
+}
+
+//benefit of product -> get load resipe and Material price
+//샘플로 제작 키트
+float VProductList::getBenefitProduct(string ItemName)
+{
+    float benefit_product;
+    //find ItemName price * 개수, see
+    QString testlabeltext = "";
+    bool findP = false;
+
+    //read resipe
+    ifstream file("recipe.csv");
+    while (!findP)
+    {
+        vector<string> row = POSTAPI::csv_read_row(file, ',');
+
+        testLabel->setText("step1");
+        //이름 * 개수 ..., 조합비까지
+
+        if(row[0]==ItemName)
+        {
+            findP = true;
+            testLabel->setText(QString::fromStdString(row[0])+QString::fromStdString(ItemName));
+            //testLabel->setText(QString::fromStdString(to_string(row.size())));
+
+            benefit_product = getItemPrice(row[0])*stoi(row[1]);
+
+            for(int i=2;i<row.size();i+=2)
+            {
+                if(row[i]=="조합비")
+                    benefit_product-= stoi(row[i+1]);
+                else
+                {
+                    benefit_product -= getItemPrice(row[i])*stoi(row[i+1]);
+                }
+
+            }
+            break;
+        }
     }
 
-
-
-
-
-
+    return benefit_product;
 }
 
 
 
-
-
-//bebefit of product -> get load resipe -> getpricefun - see
 //edit text ->edit user Reduced product costs of percent
 
+//새로고침
