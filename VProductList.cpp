@@ -18,6 +18,10 @@ using namespace std;
 
 VProductList::VProductList(QWidget *parent)
 {
+
+
+
+
     //post api
     //POSTAPI();
 
@@ -25,6 +29,12 @@ VProductList::VProductList(QWidget *parent)
     //정보
     nameLabel = new QLabel(tr("Name"));
     testLabel = new QLabel(tr("Test"));
+    editDC = new QLineEdit;
+
+//    int dc = qSettings.value("DC").toInt();
+//    editDC->setText(QString::number((dc)));//int to QString
+
+
 
     //QListWidget 구성
 
@@ -83,9 +93,14 @@ VProductList::VProductList(QWidget *parent)
     QHbox->addWidget(listWidget2);
     QHbox->addWidget(nameLabel);
     QHbox->addWidget(testLabel);
+    QHbox->addWidget(editDC);
 
     setLayout(QHbox);
     setWindowTitle("tt");
+
+
+    loadSetting();
+    saveSetting();
 }
 
 void VProductList::SetSelectedCategory()
@@ -193,7 +208,6 @@ float VProductList::getBenefitProduct(string ItemName)
 {
     float benefit_product;
     //find ItemName price * 개수, see
-    QString testlabeltext = "";
     bool findP = false;
 
     //read resipe
@@ -202,21 +216,19 @@ float VProductList::getBenefitProduct(string ItemName)
     {
         vector<string> row = POSTAPI::csv_read_row(file, ',');
 
-        testLabel->setText("step1");
-        //이름 * 개수 ..., 조합비까지
-
         if(row[0]==ItemName)
         {
             findP = true;
-            testLabel->setText(QString::fromStdString(row[0])+QString::fromStdString(ItemName));
-            //testLabel->setText(QString::fromStdString(to_string(row.size())));
 
-            benefit_product = getItemPrice(row[0])*stoi(row[1]);
+
+            benefit_product = see(getItemPrice(row[0])*stoi(row[1]));
 
             for(int i=2;i<row.size();i+=2)
             {
                 if(row[i]=="조합비")
-                    benefit_product-= stoi(row[i+1]);
+                {
+                    benefit_product-= DC_product_cost(stoi(row[i+1]));
+                }
                 else
                 {
                     benefit_product -= getItemPrice(row[i])*stoi(row[i+1]);
@@ -230,8 +242,59 @@ float VProductList::getBenefitProduct(string ItemName)
     return benefit_product;
 }
 
+int VProductList::see(int value)
+{
+    if (value == 1)
+        return value;
+    else
+    {
+        value -= ceil(value * 0.05);
+        return int(value);
+    }
+
+}
+
+//값 체크해보기
+int VProductList::DC_product_cost(float cost)
+{
+//    QSettings settings("setting.ini",QSettings::IniFormat);
+//    settings.setValue("VALUE//DC_product_cost",value);
 
 
-//edit text ->edit user Reduced product costs of percent
 
-//새로고침
+    float DC =  editDC->text().toFloat();
+    QSettings settings("setting.ini",QSettings::IniFormat);
+    settings.setValue("VALUE/DC_product_cost",DC);
+    cost = cost - (cost * (DC / 100));
+
+    return int(cost);
+}
+
+//setting load & save
+void VProductList::loadSetting()
+{
+
+    QSettings settings("setting.ini",QSettings::IniFormat);
+    settings.beginGroup("VALUE");
+    QString DCPC = settings.value("DC_product_cost","").toString();
+    settings.endGroup();
+
+    if(editDC)
+    {
+        editDC->setText(DCPC);
+    }
+
+}
+
+void VProductList::saveSetting()
+{
+    QSettings settings("setting.ini",QSettings::IniFormat);
+    settings.beginGroup("TEST");
+    settings.setValue("test_Save","test");
+    settings.endGroup();
+}
+
+
+//data... db->csv
+//UI...drawing...
+//reload
