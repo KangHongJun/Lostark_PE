@@ -13,7 +13,10 @@ typedef Byte cs_byte;
 #include "POSTAPI.h"
 #include <curl/curl.h>
 using namespace std;
-//페이지 관련 개선
+//물품관련 개선
+//현 POSTAPI를 다른 함수로 빼고,
+//url, csv name, categoty code, header,,,
+
 POSTAPI::POSTAPI()
 {
     CURL *curl;
@@ -24,7 +27,6 @@ POSTAPI::POSTAPI()
 
     ofstream fout;
     fout.open("post90000.csv");
-    bool bFirst = true;
     int page = 1;
 
     while(!bEndPage)
@@ -102,7 +104,6 @@ POSTAPI::POSTAPI()
 
                 for (auto const &p: m) {
                     fout << regex_replace(p.second, regex("\""), "") + ",";
-                    //서버는 먼저 유저 정보 담는 수준으로 - 데이터까지 담아야할 필요성은 못느낌
                 }
                 fout << "\n";
 
@@ -167,6 +168,7 @@ std::map<std::string, std::string> POSTAPI::mappify2(std::string const& s)
     return m;
 }
 
+//copy
 vector<string> POSTAPI::csv_read_row(istream &file, char delimiter)
 {
     stringstream ss;

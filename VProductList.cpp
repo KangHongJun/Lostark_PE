@@ -18,23 +18,13 @@ using namespace std;
 
 VProductList::VProductList(QWidget *parent)
 {
-
-
-
-
     //post api
     //POSTAPI();
-
 
     //정보
     nameLabel = new QLabel(tr("Name"));
     testLabel = new QLabel(tr("Test"));
     editDC = new QLineEdit;
-
-//    int dc = qSettings.value("DC").toInt();
-//    editDC->setText(QString::number((dc)));//int to QString
-
-
 
     //QListWidget 구성
 
@@ -87,20 +77,21 @@ VProductList::VProductList(QWidget *parent)
 
 
 
-
     auto *QHbox = new QHBoxLayout(this);
-    QHbox->addWidget(listWidget1);
+
+    auto *QVbox = new QVBoxLayout(this);
+    QVbox->addWidget(nameLabel);
+    QVbox->addWidget(editDC);
+    QVbox->addWidget(listWidget1);
+
+
+    QHbox->addLayout(QVbox);
     QHbox->addWidget(listWidget2);
-    QHbox->addWidget(nameLabel);
-    QHbox->addWidget(testLabel);
-    QHbox->addWidget(editDC);
 
     setLayout(QHbox);
-    setWindowTitle("tt");
-
+    setWindowTitle("LPE");
 
     loadSetting();
-    saveSetting();
 }
 
 void VProductList::SetSelectedCategory()
@@ -257,12 +248,10 @@ int VProductList::see(int value)
 //값 체크해보기
 int VProductList::DC_product_cost(float cost)
 {
-//    QSettings settings("setting.ini",QSettings::IniFormat);
-//    settings.setValue("VALUE//DC_product_cost",value);
-
-
-
     float DC =  editDC->text().toFloat();
+    //실행하는 함수마다 체크하는 것 보다는 savesetting으로 인수를 보내서 하는게 좋은거 같다..
+    //그러려면 따로 만들어서 오버라이딩
+
     QSettings settings("setting.ini",QSettings::IniFormat);
     settings.setValue("VALUE/DC_product_cost",DC);
     cost = cost - (cost * (DC / 100));
@@ -273,7 +262,6 @@ int VProductList::DC_product_cost(float cost)
 //setting load & save
 void VProductList::loadSetting()
 {
-
     QSettings settings("setting.ini",QSettings::IniFormat);
     settings.beginGroup("VALUE");
     QString DCPC = settings.value("DC_product_cost","").toString();
@@ -288,13 +276,10 @@ void VProductList::loadSetting()
 
 void VProductList::saveSetting()
 {
-    QSettings settings("setting.ini",QSettings::IniFormat);
-    settings.beginGroup("TEST");
-    settings.setValue("test_Save","test");
-    settings.endGroup();
+
 }
 
 
 //data... db->csv
 //UI...drawing...
-//reload
+//reload btn
