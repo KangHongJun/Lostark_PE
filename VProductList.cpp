@@ -1,7 +1,6 @@
-//https://doc.qt.io/qt-6/classes.html
+//
 // Created by rkdgh on 2023-01-03.
 //
-
 #include <QListWidget>
 #include <QGridLayout>
 #include <QString>
@@ -21,14 +20,46 @@ VProductList::VProductList(QWidget *parent)
     //post api
     //POSTAPI();
 
+    MakeCategoryListWidget();
+
+    category_listWidget = new QListWidget(this);
+    new QListWidgetItem(tr("post90000"),category_listWidget);
+    new QListWidgetItem(tr("ProductA"),category_listWidget);
+
+    listWidget2 = new QListWidget(this);
+
+    connect(category_listWidget,&QListWidget::itemClicked,
+            this,&VProductList::SetSelectedCategory);
+
+    connect(listWidget2,&QListWidget::itemClicked,
+            this,&VProductList::SetViewTest);
+
+
+    //QHbox를 먼저 선언해야함
+    auto *QHbox = new QHBoxLayout(this);
+    auto *QVbox = new QVBoxLayout(this);
+    QVbox->addWidget(nameLabel);
+    QVbox->addWidget(editDC);
+    QVbox->addWidget(category_listWidget);
+
+
+    QHbox->addLayout(QVbox);
+    QHbox->addWidget(listWidget2);
+
+    setLayout(QHbox);
+    setWindowTitle("LPE");
+
+    loadSetting();
+}
+
+void VProductList::MakeCategoryListWidget()
+{
     //정보
-    nameLabel = new QLabel(tr("Name"));
-    testLabel = new QLabel(tr("Test"));
+    nameLabel = new QLabel();
     editDC = new QLineEdit;
 
-    //QListWidget 구성
-
-    //post90000 list by read csv
+    //post90000 / list by read csv - 다른 코드도 처리하는 방식 고민
+    //set list, save vector
     ifstream file("post90000.csv");
     while(file.good())
     {
@@ -45,8 +76,12 @@ VProductList::VProductList(QWidget *parent)
         {
             for(auto v: row)
             {
+                //name (BC) price 형태로 변경하기
                 QString listname = QString::fromStdString(row[POSTAPI::eInfoItem::Name]);
                 post90000.append(listname);
+
+                //CMP - 이름, 현재 가격 // BC - 이름, 번들 갯수
+                //두개로 나눈 이유는..기억이 안난다 나중에
                 ItemCMP.emplace_back(row[POSTAPI::eInfoItem::Name],row[POSTAPI::eInfoItem::CurrentMinPrice]);
                 ItemBC.emplace_back(row[POSTAPI::eInfoItem::Name],row[POSTAPI::eInfoItem::BundleCount]);
                 break;
@@ -54,50 +89,38 @@ VProductList::VProductList(QWidget *parent)
         }
     }
 
-    //productA product info - recipe
-    productA.append("최상급");
-    productA.append("최상급1");
-    productA.append("최상급2");
-    nameC.append("C1");
-    nameC.append("C2");
-    nameC.append("C3");
+    //대놓고 반복되는 부분이다.
+    //
+    ifstream file2("recipe.csv");
+    while(file2.good())
+    {
+        vector<string> row = POSTAPI::csv_read_row(file2,',');
 
-    listWidget1 = new QListWidget(this);
-    new QListWidgetItem(tr("post90000"),listWidget1);
-    new QListWidgetItem(tr("제작A"),listWidget1);
-    new QListWidgetItem(tr("name3"),listWidget1);
+        if(row[0]=="@")
+            break;
 
-    listWidget2 = new QListWidget(this);
-
-    connect(listWidget1,&QListWidget::itemClicked,
-            this,&VProductList::SetSelectedCategory);
-
-    connect(listWidget2,&QListWidget::itemClicked,
-            this,&VProductList::SetViewTest);
-
-
-
-    auto *QHbox = new QHBoxLayout(this);
-
-    auto *QVbox = new QVBoxLayout(this);
-    QVbox->addWidget(nameLabel);
-    QVbox->addWidget(editDC);
-    QVbox->addWidget(listWidget1);
-
-
-    QHbox->addLayout(QVbox);
-    QHbox->addWidget(listWidget2);
-
-    setLayout(QHbox);
-    setWindowTitle("LPE");
-
-    loadSetting();
+        if(!row[0].find('#'))
+        {
+            continue;
+        }
+        else
+        {
+            for(auto v: row)
+            {
+                //name (BC) price 형태로 변경하기
+                QString listname = QString::fromStdString(row[0]);
+                productA.append(listname);
+                break;
+            }
+        }
+    }
 }
 
+//category item apeend to listwidget
 void VProductList::SetSelectedCategory()
 {
     listWidget2->clear();
-    int selectedRow = listWidget1->currentRow();
+    int selectedRow = category_listWidget->currentRow();
 
     switch (selectedRow)
     {
@@ -113,12 +136,6 @@ void VProductList::SetSelectedCategory()
                 new QListWidgetItem(productA[i],listWidget2);
             }
             break;
-        case 2:
-            for(int i=0;i<nameC.length();i++)
-            {
-                new QListWidgetItem(nameC[i],listWidget2);
-            }
-            break;
     }
 }
 
@@ -127,7 +144,7 @@ void VProductList::SetViewTest()
     nameLabel->clear();
     nameLabel->show();
 
-    string curCate = listWidget1->currentItem()->text().toStdString();
+    string curCate = category_listWidget->currentItem()->text().toStdString();
     //curCate기준 enum을 사용하여 category를 나눌수도 있고, 나중엔 분리될 list들이기 때문에 connect 함수를 나눠도 된다.
     //당장은 if문
 
@@ -146,26 +163,23 @@ void VProductList::SetViewTest()
 
         nameLabel->setText(testqst);
     }
-    else if(curCate=="제작A")
+    else if(curCate=="ProductA")
     {
 
-        QString test = QString::fromStdString(to_string(getBenefitProduct("달인용 제작 키트")));
-        //nameLabel->setText(listWidget2->currentItem()->text());
+        string select = listWidget2->currentItem()->text().toStdString();
+        QString test = QString::fromStdString(to_string(getBenefitProduct(select)));
 
         nameLabel->setText(test);
+
     }
 }
 
 //나중에 빼기
 //Label name -> Item Name(BundleCount) - Price
 
-
-
-
 //make getpricefun -> get ItemPrice - currentinrpice/byndlecoun
 float VProductList::getItemPrice(std::string ItemName)
 {
-
     float CMP;
     float BC;
 
@@ -201,7 +215,7 @@ float VProductList::getBenefitProduct(string ItemName)
     //find ItemName price * 개수, see
     bool findP = false;
 
-    //read resipe
+    //read recipe
     ifstream file("recipe.csv");
     while (!findP)
     {
@@ -213,12 +227,11 @@ float VProductList::getBenefitProduct(string ItemName)
 
 
             benefit_product = see(getItemPrice(row[0])*stoi(row[1]));
-
-            for(int i=2;i<row.size();i+=2)
+            for(int i=2;i<row.size()-1;i+=2)
             {
                 if(row[i]=="조합비")
                 {
-                    benefit_product-= DC_product_cost(stoi(row[i+1]));
+                   benefit_product-= DC_product_cost(stoi(row[i+1]));
                 }
                 else
                 {

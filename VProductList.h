@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QSettings>
 #include <QSettings>
+#include <QGridLayout>
 
 #ifndef LOSTARK_PE_VPRODUCTLIST_H
 #define LOSTARK_PE_VPRODUCTLIST_H
@@ -20,11 +21,17 @@ class VProductList : public QWidget {
 
 public:
     VProductList(QWidget *parent = nullptr);
-
     std::vector<std::pair<std::string,std::string>> ItemCMP;
     std::vector<std::pair<std::string,std::string>> ItemBC;
-    float getItemPrice(std::string ItemName);
+    std::vector<std::pair<std::string,std::string>> ItemRC;
 
+    //UI
+    void MakeCategoryListWidget();
+
+
+
+
+    float getItemPrice(std::string ItemName);
     float getBenefitProduct(std::string ItemName);
     int DC_product_cost(float value);
     int see(int value);
@@ -37,11 +44,10 @@ public slots:
 
 
 private:
-    QListWidget *listWidget1;
+    QListWidget *category_listWidget;
     QListWidget *listWidget2;
-    QPushButton *addButton;
+    QPushButton *reloadButton;
     QLabel *nameLabel;
-    QLabel *testLabel;
     QLineEdit *editDC;
 
     QString test;
@@ -55,7 +61,6 @@ private:
 protected:
     QStringList post90000;
     QStringList productA;
-    QStringList nameC;
 };
 
 
